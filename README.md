@@ -43,10 +43,23 @@ npx node-red --userDir "./node-red-data" --port 1880
 
 ## Konfigurace API klíče
 
-API klíč je uložen v flow kontextu. Pro změnu:
-1. Otevřete node "Nastavit konfiguraci"
-2. Upravte hodnotu `API_KEY`
-3. Deploy
+API klíč je načítán z externího souboru `config.json`:
+
+1. Zkopírujte šablonu:
+   ```bash
+   cp config.example.json config.json
+   ```
+2. Upravte `config.json` a vložte svůj API klíč:
+   ```json
+   {
+       "husense_api_key": "VÁŠ_API_KLÍČ",
+       "spaces": {
+           "plzen01": "d25d9824-36e2-4d0f-bf89-caf574620d88",
+           "plzen02": "085fbb0f-a394-4e9b-a57b-9398af59e6bb"
+       }
+   }
+   ```
+3. Soubor `config.json` je v `.gitignore` - nebude uložen do git
 
 ## API Servery
 

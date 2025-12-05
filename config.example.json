@@ -1,0 +1,7 @@
+{
+    "husense_api_key": "YOUR_HUSENSE_API_KEY_HERE",
+    "spaces": {
+        "plzen01": "d25d9824-36e2-4d0f-bf89-caf574620d88",
+        "plzen02": "085fbb0f-a394-4e9b-a57b-9398af59e6bb"
+    }
+}

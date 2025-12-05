@@ -152,13 +152,39 @@
         "type": "inject",
         "z": "husense-dashboard-tab",
         "name": "Inicializace",
-        "props": [],
+        "props": [
+            {
+                "p": "filename",
+                "v": "config.json",
+                "vt": "str"
+            }
+        ],
         "repeat": "",
         "crontab": "",
         "once": true,
         "onceDelay": "1",
         "topic": "",
         "x": 130,
+        "y": 60,
+        "wires": [
+            [
+                "file-read-config"
+            ]
+        ]
+    },
+    {
+        "id": "file-read-config",
+        "type": "file in",
+        "z": "husense-dashboard-tab",
+        "name": "Načíst config.json",
+        "filename": "config.json",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": true,
+        "encoding": "utf8",
+        "allProps": false,
+        "x": 310,
         "y": 60,
         "wires": [
             [
@@ -171,14 +197,14 @@
         "type": "function",
         "z": "husense-dashboard-tab",
         "name": "Nastavit konfiguraci",
-        "func": "// API klíč - ZDE ZMĚŇTE PRO JINÝ KLÍČ\nconst API_KEY = 'YOUR_HUSENSE_API_KEY_HERE';\n\nflow.set('api_key', API_KEY);\nflow.set('api_url', 'https://api.husense.io/api/v1');\nflow.set('bff_url', 'https://bff.husense.io');\nflow.set('spaces', {\n    'plzen01': 'd25d9824-36e2-4d0f-bf89-caf574620d88',\n    'plzen02': '085fbb0f-a394-4e9b-a57b-9398af59e6bb'\n});\n\nnode.status({fill:'green', shape:'dot', text:'Inicializováno'});\nreturn { payload: 'Konfigurace načtena' };",
+        "func": "// Načíst konfiguraci ze souboru config.json\nlet config;\ntry {\n    config = JSON.parse(msg.payload);\n} catch (e) {\n    node.status({fill:'red', shape:'ring', text:'Chyba JSON'});\n    return { payload: 'Chyba: Neplatný config.json' };\n}\n\nif (!config.husense_api_key || config.husense_api_key === 'YOUR_HUSENSE_API_KEY_HERE') {\n    node.status({fill:'yellow', shape:'ring', text:'Chybí API klíč'});\n    return { payload: 'Nastavte API klíč v config.json' };\n}\n\nflow.set('api_key', config.husense_api_key);\nflow.set('api_url', 'https://api.husense.io/api/v1');\nflow.set('bff_url', 'https://bff.husense.io');\nflow.set('spaces', config.spaces || {\n    'plzen01': 'd25d9824-36e2-4d0f-bf89-caf574620d88',\n    'plzen02': '085fbb0f-a394-4e9b-a57b-9398af59e6bb'\n});\n\nnode.status({fill:'green', shape:'dot', text:'Načteno z config.json'});\nreturn { payload: 'Konfigurace načtena z config.json' };",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 340,
+        "x": 520,
         "y": 60,
         "wires": [
             [
