@@ -251,7 +251,8 @@
         "wires": [
             [
                 "func-fetch-average",
-                "func-fetch-daily"
+                "func-fetch-daily",
+                "func-fetch-gates"
             ]
         ]
     },
@@ -271,7 +272,8 @@
         "wires": [
             [
                 "func-fetch-average",
-                "func-fetch-daily"
+                "func-fetch-daily",
+                "func-fetch-gates"
             ]
         ]
     },
@@ -723,6 +725,16 @@
         ]
     },
     {
+        "id": "dashboard-group-gates",
+        "type": "ui_group",
+        "name": "Statistiky bran (ClassifiedGates)",
+        "tab": "dashboard-tab-main",
+        "order": 4,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
         "id": "dashboard-group-heatmap",
         "type": "ui_group",
         "name": "Heatmapa pohybu",
@@ -733,13 +745,141 @@
         "collapse": false
     },
     {
+        "id": "comment-gates",
+        "type": "comment",
+        "z": "husense-dashboard-tab",
+        "name": "=== STATISTIKY BRAN ===",
+        "info": "",
+        "x": 170,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "func-fetch-gates",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request ClassifiedGates",
+        "func": "const apiKey = flow.get('api_key');\nconst bffUrl = flow.get('bff_url');\nconst spaces = flow.get('spaces');\n\nif (!apiKey) {\n    node.status({fill:'red', shape:'ring', text:'Chybí API klíč'});\n    return null;\n}\n\n// Použít plzen01 jako výchozí\nconst spaceId = spaces.plzen01;\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = bffUrl + '/api/v1/Spaces/' + spaceId + '/ClassifiedGates';\nmsg.spaceId = spaceId;\nmsg.spaceName = 'Plzen-01';\n\nnode.status({fill:'blue', shape:'dot', text:'Načítám brány...'});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 410,
+        "y": 640,
+        "wires": [
+            ["http-gates"]
+        ]
+    },
+    {
+        "id": "http-gates",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET ClassifiedGates",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 630,
+        "y": 640,
+        "wires": [
+            ["func-process-gates"]
+        ]
+    },
+    {
+        "id": "func-process-gates",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Zpracovat brány",
+        "func": "if (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return { payload: { error: true, gates: [], spaceName: msg.spaceName } };\n}\n\nconst gates = msg.payload;\nif (!gates || gates.length === 0) {\n    node.status({fill:'yellow', shape:'ring', text:'Žádné brány'});\n    return { payload: { error: false, gates: [], spaceName: msg.spaceName, message: 'Žádné brány' } };\n}\n\nnode.status({fill:'blue', shape:'dot', text: gates.length + ' bran'});\n\n// Uložit seznam bran do kontextu\nflow.set('gates_list', gates);\nflow.set('gates_data', []);\nflow.set('gates_pending', gates.length);\nflow.set('gates_space_name', msg.spaceName);\n\n// Pro každou bránu poslat request na LatestData\nconst apiKey = flow.get('api_key');\nconst bffUrl = flow.get('bff_url');\nconst spaceId = msg.spaceId;\n\nconst messages = gates.map(gate => {\n    return {\n        headers: {\n            'Authorization': 'Bearer ' + apiKey,\n            'Content-Type': 'application/json'\n        },\n        url: bffUrl + '/api/v1/Spaces/' + spaceId + '/ClassifiedGates/' + gate.identifier + '/LatestData',\n        gateId: gate.identifier,\n        gateName: gate.name,\n        gateDescription: gate.description\n    };\n});\n\nreturn [messages];",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 830,
+        "y": 640,
+        "wires": [
+            ["http-gate-data"]
+        ]
+    },
+    {
+        "id": "http-gate-data",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET Gate LatestData",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 1030,
+        "y": 640,
+        "wires": [
+            ["func-collect-gate-data"]
+        ]
+    },
+    {
+        "id": "func-collect-gate-data",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Sbírat data bran",
+        "func": "// Sbírat data z jednotlivých bran\nlet gatesData = flow.get('gates_data') || [];\nlet pending = flow.get('gates_pending') || 0;\nconst spaceName = flow.get('gates_space_name') || '';\n\nif (msg.statusCode === 200 && msg.payload) {\n    gatesData.push({\n        id: msg.gateId,\n        name: msg.gateName,\n        description: msg.gateDescription,\n        data: msg.payload\n    });\n    flow.set('gates_data', gatesData);\n}\n\npending--;\nflow.set('gates_pending', pending);\n\n// Pokud jsou všechny hotové, poslat do UI\nif (pending <= 0) {\n    node.status({fill:'green', shape:'dot', text: gatesData.length + ' bran načteno'});\n    return {\n        payload: {\n            gates: gatesData,\n            spaceName: spaceName,\n            timestamp: new Date().toLocaleString('cs-CZ')\n        }\n    };\n}\n\nnode.status({fill:'blue', shape:'dot', text: 'Zbývá: ' + pending});\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1230,
+        "y": 640,
+        "wires": [
+            ["ui-template-gates"]
+        ]
+    },
+    {
+        "id": "ui-template-gates",
+        "type": "ui_template",
+        "z": "husense-dashboard-tab",
+        "group": "dashboard-group-gates",
+        "name": "Tabulka bran",
+        "order": 1,
+        "width": "12",
+        "height": "6",
+        "format": "<style>\n.gates-container {\n    padding: 10px;\n}\n.gates-table {\n    width: 100%;\n    border-collapse: collapse;\n    font-size: 13px;\n}\n.gates-table th {\n    background: #097479;\n    color: white;\n    padding: 10px 8px;\n    text-align: left;\n    font-weight: 500;\n}\n.gates-table td {\n    padding: 8px;\n    border-bottom: 1px solid #444;\n}\n.gates-table tr:hover {\n    background: rgba(9, 116, 121, 0.2);\n}\n.gate-name {\n    font-weight: bold;\n    color: #0eb8c0;\n}\n.gate-desc {\n    font-size: 11px;\n    color: #888;\n}\n.gate-count {\n    font-size: 16px;\n    font-weight: bold;\n}\n.gate-in { color: #4CAF50; }\n.gate-out { color: #f44336; }\n.gate-type {\n    display: inline-block;\n    padding: 2px 6px;\n    border-radius: 3px;\n    font-size: 11px;\n    margin: 1px;\n}\n.type-person { background: #2196F3; color: white; }\n.type-runner { background: #FF9800; color: white; }\n.type-bike { background: #9C27B0; color: white; }\n.type-car { background: #607D8B; color: white; }\n.type-bus { background: #795548; color: white; }\n.gates-info {\n    font-size: 11px;\n    color: #888;\n    margin-top: 10px;\n    text-align: right;\n}\n</style>\n\n<div class=\"gates-container\">\n    <div ng-if=\"!msg.payload || !msg.payload.gates\">\n        <p style=\"color:#888; text-align:center;\">Klikněte na \"Obnovit vše\" pro načtení dat bran</p>\n    </div>\n    <div ng-if=\"msg.payload && msg.payload.gates && msg.payload.gates.length === 0\">\n        <p style=\"color:#888; text-align:center;\">Žádné brány pro tento prostor</p>\n    </div>\n    <table class=\"gates-table\" ng-if=\"msg.payload && msg.payload.gates && msg.payload.gates.length > 0\">\n        <thead>\n            <tr>\n                <th>Brána</th>\n                <th>Vstup</th>\n                <th>Výstup</th>\n                <th>Detaily (person/runner/bike)</th>\n            </tr>\n        </thead>\n        <tbody>\n            <tr ng-repeat=\"gate in msg.payload.gates\">\n                <td>\n                    <div class=\"gate-name\">{{gate.name}}</div>\n                    <div class=\"gate-desc\">{{gate.description}}</div>\n                </td>\n                <td>\n                    <span class=\"gate-count gate-in\" ng-if=\"gate.data.person\">\n                        {{gate.data.person.in + gate.data.runner.in + gate.data.bike.in + (gate.data.unclassified ? gate.data.unclassified.in : 0)}}\n                    </span>\n                </td>\n                <td>\n                    <span class=\"gate-count gate-out\" ng-if=\"gate.data.person\">\n                        {{gate.data.person.out + gate.data.runner.out + gate.data.bike.out + (gate.data.unclassified ? gate.data.unclassified.out : 0)}}\n                    </span>\n                </td>\n                <td ng-if=\"gate.data.person\">\n                    <span class=\"gate-type type-person\">Osob: {{gate.data.person.in}}/{{gate.data.person.out}}</span>\n                    <span class=\"gate-type type-runner\" ng-if=\"gate.data.runner.in > 0 || gate.data.runner.out > 0\">Běžců: {{gate.data.runner.in}}/{{gate.data.runner.out}}</span>\n                    <span class=\"gate-type type-bike\" ng-if=\"gate.data.bike.in > 0 || gate.data.bike.out > 0\">Kol: {{gate.data.bike.in}}/{{gate.data.bike.out}}</span>\n                </td>\n            </tr>\n        </tbody>\n    </table>\n    <div class=\"gates-info\" ng-if=\"msg.payload && msg.payload.timestamp\">\n        {{msg.payload.spaceName}} | Aktualizováno: {{msg.payload.timestamp}}\n    </div>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 1430,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    },
+    {
         "id": "comment-heatmap",
         "type": "comment",
         "z": "husense-dashboard-tab",
         "name": "=== HEATMAPA ===",
         "info": "",
         "x": 150,
-        "y": 600,
+        "y": 750,
         "wires": []
     },
     {
@@ -924,7 +1064,7 @@
         "type": "function",
         "z": "husense-dashboard-tab",
         "name": "Zpracovat heatmap",
-        "func": "if (msg.statusCode === 404) {\n    node.status({fill:'yellow', shape:'ring', text:'Žádná data'});\n    return { payload: { error: true, message: 'Heatmapa není dostupná pro vybraný prostor nebo období (404)' } };\n}\n\nif (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return { payload: { error: true, message: 'Chyba při načítání: HTTP ' + msg.statusCode } };\n}\n\nconst data = msg.payload;\nif (!data || !data.data || !data.width) {\n    node.status({fill:'yellow', shape:'ring', text:'Prázdná data'});\n    return { payload: { error: true, message: 'API vrátilo prázdná data' } };\n}\n\nnode.status({fill:'green', shape:'dot', text: data.width + 'x' + data.height});\n\nreturn { \n    payload: {\n        width: data.width,\n        height: data.height,\n        data: data.data,\n        timestamp: new Date().toLocaleString('cs-CZ')\n    }\n};",
+        "func": "if (msg.statusCode === 404) {\n    node.status({fill:'yellow', shape:'ring', text:'Žádná data'});\n    return { payload: { error: true, message: 'Heatmapa není dostupná pro vybraný prostor nebo období (404)' } };\n}\n\nif (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return { payload: { error: true, message: 'Chyba při načítání: HTTP ' + msg.statusCode } };\n}\n\nconst data = msg.payload;\nif (!data || !data.data || !data.width) {\n    node.status({fill:'yellow', shape:'ring', text:'Prázdná data'});\n    return { payload: { error: true, message: 'API vrátilo prázdná data' } };\n}\n\nnode.status({fill:'green', shape:'dot', text: data.width + 'x' + data.height + ' img:' + data.image});\n\n// Uložit heatmap data do flow kontextu\nflow.set('heatmap_data', {\n    width: data.width,\n    height: data.height,\n    data: data.data,\n    timestamp: new Date().toLocaleString('cs-CZ')\n});\n\n// Pokud máme imageKey, pokračovat na načtení obrázku\nif (data.image) {\n    const apiKey = flow.get('api_key');\n    const bffUrl = flow.get('bff_url');\n    msg.headers = {\n        'Authorization': 'Bearer ' + apiKey,\n        'Content-Type': 'application/json'\n    };\n    msg.url = bffUrl + '/images/' + data.image;\n    return msg;\n}\n\n// Bez obrázku - poslat rovnou do canvasu\nreturn { \n    payload: {\n        width: data.width,\n        height: data.height,\n        data: data.data,\n        timestamp: new Date().toLocaleString('cs-CZ'),\n        backgroundUrl: null\n    }\n};",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -932,6 +1072,50 @@
         "finalize": "",
         "libs": [],
         "x": 770,
+        "y": 640,
+        "wires": [
+            [
+                "http-get-image"
+            ]
+        ]
+    },
+    {
+        "id": "http-get-image",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET Image URL",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 970,
+        "y": 640,
+        "wires": [
+            [
+                "func-combine-image"
+            ]
+        ]
+    },
+    {
+        "id": "func-combine-image",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Kombinovat data",
+        "func": "// Načíst heatmap data z flow kontextu\nconst heatmapData = flow.get('heatmap_data');\n\nif (!heatmapData) {\n    node.status({fill:'red', shape:'ring', text:'Chybí heatmap data'});\n    return null;\n}\n\n// Získat URL obrázku z odpovědi\nlet backgroundUrl = null;\nif (msg.statusCode === 200 && msg.payload && msg.payload.url) {\n    backgroundUrl = msg.payload.url;\n    node.status({fill:'green', shape:'dot', text:'S obrázkem'});\n} else {\n    node.status({fill:'yellow', shape:'ring', text:'Bez obrázku'});\n}\n\nreturn {\n    payload: {\n        width: heatmapData.width,\n        height: heatmapData.height,\n        data: heatmapData.data,\n        timestamp: heatmapData.timestamp,\n        backgroundUrl: backgroundUrl\n    }\n};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
         "y": 640,
         "wires": [
             [
@@ -948,7 +1132,7 @@
         "order": 4,
         "width": "12",
         "height": "11",
-        "format": "<style>\n#heatmap-canvas-{{$id}} {\n    border: 1px solid #555;\n    background: #222;\n    display: block;\n    margin: 10px auto;\n}\n.heatmap-info {\n    font-size: 12px;\n    color: #aaa;\n    margin: 5px 0;\n    text-align: center;\n}\n.heatmap-legend {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    margin-top: 10px;\n    font-size: 11px;\n    color: #aaa;\n}\n.legend-gradient {\n    width: 200px;\n    height: 15px;\n    background: linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);\n    margin: 0 10px;\n    border-radius: 3px;\n}\n</style>\n\n<div style=\"text-align:center; padding:10px;\">\n    <canvas id=\"heatmap-canvas-{{$id}}\" width=\"368\" height=\"240\"></canvas>\n    <div class=\"heatmap-info\" ng-if=\"msg.payload.timestamp\">\n        Aktualizováno: {{msg.payload.timestamp}} | Rozměr: {{msg.payload.width}}x{{msg.payload.height}} | Max: {{maxVal}}\n    </div>\n    <div class=\"heatmap-info\" ng-if=\"!msg.payload\" style=\"color:#888;\">\n        Klikněte na \"Načíst heatmapu\"\n    </div>\n    <div class=\"heatmap-legend\">\n        <span>Nízká</span>\n        <div class=\"legend-gradient\"></div>\n        <span>Vysoká</span>\n    </div>\n</div>\n\n<script>\n(function(scope) {\n    scope.maxVal = 0;\n    \n    scope.$watch('msg.payload', function(payload) {\n        if (!payload || !payload.data || !payload.width) return;\n        \n        setTimeout(function() {\n            var canvas = document.getElementById('heatmap-canvas-' + scope.$id);\n            if (!canvas) { console.error('Canvas not found'); return; }\n            \n            var ctx = canvas.getContext('2d');\n            var w = payload.width;\n            var h = payload.height;\n            var data = payload.data;\n            \n            canvas.width = w * 3;\n            canvas.height = h * 3;\n            \n            var max = 0;\n            for (var i = 0; i < data.length; i++) {\n                if (data[i] > max) max = data[i];\n            }\n            scope.maxVal = max.toFixed(1);\n            scope.$apply();\n            \n            if (max === 0) max = 1;\n            \n            var imgData = ctx.createImageData(w, h);\n            for (var i = 0; i < data.length; i++) {\n                var n = data[i] / max;\n                var r, g, b;\n                if (n < 0.25) { r = 0; g = Math.floor(n*4*255); b = 255; }\n                else if (n < 0.5) { r = 0; g = 255; b = Math.floor((1-(n-0.25)*4)*255); }\n                else if (n < 0.75) { r = Math.floor((n-0.5)*4*255); g = 255; b = 0; }\n                else { r = 255; g = Math.floor((1-(n-0.75)*4)*255); b = 0; }\n                imgData.data[i*4] = r;\n                imgData.data[i*4+1] = g;\n                imgData.data[i*4+2] = b;\n                imgData.data[i*4+3] = 255;\n            }\n            \n            var tmpCanvas = document.createElement('canvas');\n            tmpCanvas.width = w;\n            tmpCanvas.height = h;\n            tmpCanvas.getContext('2d').putImageData(imgData, 0, 0);\n            \n            ctx.imageSmoothingEnabled = false;\n            ctx.drawImage(tmpCanvas, 0, 0, w*3, h*3);\n            \n            console.log('Heatmap: ' + w + 'x' + h + ', max=' + max);\n        }, 100);\n    });\n})(scope);\n</script>",
+        "format": "<style>\n#heatmap-container-{{$id}} {\n    position: relative;\n    display: inline-block;\n    margin: 10px auto;\n}\n#heatmap-bg-{{$id}} {\n    display: block;\n    border: 1px solid #555;\n}\n#heatmap-canvas-{{$id}} {\n    position: absolute;\n    top: 1px;\n    left: 1px;\n    pointer-events: none;\n}\n.heatmap-info {\n    font-size: 12px;\n    color: #aaa;\n    margin: 5px 0;\n    text-align: center;\n}\n.heatmap-legend {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    margin-top: 10px;\n    font-size: 11px;\n    color: #aaa;\n}\n.legend-gradient {\n    width: 200px;\n    height: 15px;\n    background: linear-gradient(to right, rgba(0,0,255,0.7), rgba(0,255,255,0.7), rgba(0,255,0,0.7), rgba(255,255,0,0.7), rgba(255,0,0,0.7));\n    margin: 0 10px;\n    border-radius: 3px;\n}\n.heatmap-slider {\n    margin: 10px auto;\n    text-align: center;\n}\n.heatmap-slider input {\n    width: 200px;\n}\n</style>\n\n<div style=\"text-align:center; padding:10px;\">\n    <div id=\"heatmap-container-{{$id}}\">\n        <img id=\"heatmap-bg-{{$id}}\" style=\"background:#222;\">\n        <canvas id=\"heatmap-canvas-{{$id}}\"></canvas>\n    </div>\n    <div class=\"heatmap-slider\">\n        <label>Průhlednost heatmapy: <span id=\"opacity-val-{{$id}}\">50</span>%</label><br>\n        <input type=\"range\" id=\"opacity-slider-{{$id}}\" min=\"0\" max=\"100\" value=\"50\">\n    </div>\n    <div class=\"heatmap-info\" ng-if=\"msg.payload.timestamp\">\n        Aktualizováno: {{msg.payload.timestamp}} | Rozměr: {{msg.payload.width}}x{{msg.payload.height}} | Max: {{maxVal}}\n    </div>\n    <div class=\"heatmap-info\" ng-if=\"!msg.payload\" style=\"color:#888;\">\n        Klikněte na \"Načíst heatmapu\"\n    </div>\n    <div class=\"heatmap-legend\">\n        <span>Nízká</span>\n        <div class=\"legend-gradient\"></div>\n        <span>Vysoká</span>\n    </div>\n</div>\n\n<script>\n(function(scope) {\n    scope.maxVal = 0;\n    var currentHeatmapData = null;\n    var currentMax = 1;\n    \n    function drawHeatmap(canvas, w, h, data, max, opacity) {\n        var ctx = canvas.getContext('2d');\n        ctx.clearRect(0, 0, canvas.width, canvas.height);\n        \n        var imgData = ctx.createImageData(w, h);\n        var alpha = Math.floor(opacity * 2.55);\n        \n        for (var i = 0; i < data.length; i++) {\n            var n = data[i] / max;\n            var r, g, b, a;\n            if (n === 0) {\n                a = 0;\n                r = g = b = 0;\n            } else {\n                a = alpha;\n                if (n < 0.25) { r = 0; g = Math.floor(n*4*255); b = 255; }\n                else if (n < 0.5) { r = 0; g = 255; b = Math.floor((1-(n-0.25)*4)*255); }\n                else if (n < 0.75) { r = Math.floor((n-0.5)*4*255); g = 255; b = 0; }\n                else { r = 255; g = Math.floor((1-(n-0.75)*4)*255); b = 0; }\n            }\n            imgData.data[i*4] = r;\n            imgData.data[i*4+1] = g;\n            imgData.data[i*4+2] = b;\n            imgData.data[i*4+3] = a;\n        }\n        \n        var tmpCanvas = document.createElement('canvas');\n        tmpCanvas.width = w;\n        tmpCanvas.height = h;\n        tmpCanvas.getContext('2d').putImageData(imgData, 0, 0);\n        \n        ctx.imageSmoothingEnabled = false;\n        ctx.drawImage(tmpCanvas, 0, 0, canvas.width, canvas.height);\n    }\n    \n    scope.$watch('msg.payload', function(payload) {\n        if (!payload || !payload.data || !payload.width) return;\n        \n        setTimeout(function() {\n            var container = document.getElementById('heatmap-container-' + scope.$id);\n            var bgImg = document.getElementById('heatmap-bg-' + scope.$id);\n            var canvas = document.getElementById('heatmap-canvas-' + scope.$id);\n            var slider = document.getElementById('opacity-slider-' + scope.$id);\n            var opacityVal = document.getElementById('opacity-val-' + scope.$id);\n            \n            if (!canvas || !bgImg) { console.error('Elements not found'); return; }\n            \n            var w = payload.width;\n            var h = payload.height;\n            var data = payload.data;\n            currentHeatmapData = data;\n            \n            var max = 0;\n            for (var i = 0; i < data.length; i++) {\n                if (data[i] > max) max = data[i];\n            }\n            currentMax = max || 1;\n            scope.maxVal = max.toFixed(1);\n            scope.$apply();\n            \n            var displayWidth = w * 3;\n            var displayHeight = h * 3;\n            \n            if (payload.backgroundUrl) {\n                bgImg.onload = function() {\n                    displayWidth = bgImg.naturalWidth;\n                    displayHeight = bgImg.naturalHeight;\n                    if (displayWidth > 600) {\n                        var ratio = 600 / displayWidth;\n                        displayWidth = 600;\n                        displayHeight = Math.floor(displayHeight * ratio);\n                    }\n                    bgImg.width = displayWidth;\n                    bgImg.height = displayHeight;\n                    canvas.width = displayWidth;\n                    canvas.height = displayHeight;\n                    drawHeatmap(canvas, w, h, data, currentMax, slider.value);\n                    console.log('Heatmap with background: ' + displayWidth + 'x' + displayHeight);\n                };\n                bgImg.src = payload.backgroundUrl;\n            } else {\n                bgImg.width = displayWidth;\n                bgImg.height = displayHeight;\n                bgImg.style.background = '#222';\n                canvas.width = displayWidth;\n                canvas.height = displayHeight;\n                drawHeatmap(canvas, w, h, data, currentMax, slider.value);\n                console.log('Heatmap without background: ' + displayWidth + 'x' + displayHeight);\n            }\n            \n            slider.oninput = function() {\n                opacityVal.textContent = this.value;\n                if (currentHeatmapData) {\n                    drawHeatmap(canvas, w, h, currentHeatmapData, currentMax, this.value);\n                }\n            };\n        }, 100);\n    });\n})(scope);\n</script>",
         "storeOutMessages": true,
         "fwdInMessages": true,
         "resendOnRefresh": true,
