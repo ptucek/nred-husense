@@ -1,0 +1,936 @@
+[
+    {
+        "id": "husense-dashboard-tab",
+        "type": "tab",
+        "label": "Husense Dashboard",
+        "disabled": false,
+        "info": "Dashboard pro vizualizaci dat z Husense API"
+    },
+    {
+        "id": "dashboard-ui-base",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-dark",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#097479",
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#0eb8c0",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#555555",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#333333",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#eeeeee",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#097479",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#333333",
+                    "edited": false
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey"
+            }
+        },
+        "site": {
+            "name": "Husense Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD.MM.YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "dashboard-group-config",
+        "type": "ui_group",
+        "name": "Konfigurace",
+        "tab": "dashboard-tab-main",
+        "order": 1,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "dashboard-group-stats",
+        "type": "ui_group",
+        "name": "Průměrná návštěvnost",
+        "tab": "dashboard-tab-main",
+        "order": 2,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "dashboard-group-chart",
+        "type": "ui_group",
+        "name": "Denní návštěvnost",
+        "tab": "dashboard-tab-main",
+        "order": 3,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "dashboard-group-spaces",
+        "type": "ui_group",
+        "name": "Spaces & Devices",
+        "tab": "dashboard-tab-main",
+        "order": 6,
+        "disp": true,
+        "width": "12",
+        "collapse": true
+    },
+    {
+        "id": "dashboard-tab-main",
+        "type": "ui_tab",
+        "name": "Husense",
+        "icon": "dashboard",
+        "order": 1,
+        "disabled": false,
+        "hidden": false
+    },
+    {
+        "id": "inject-init",
+        "type": "inject",
+        "z": "husense-dashboard-tab",
+        "name": "Inicializace",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "1",
+        "topic": "",
+        "x": 130,
+        "y": 60,
+        "wires": [
+            [
+                "func-init-config"
+            ]
+        ]
+    },
+    {
+        "id": "func-init-config",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Nastavit konfiguraci",
+        "func": "// API klíč - ZDE ZMĚŇTE PRO JINÝ KLÍČ\nconst API_KEY = 'YOUR_HUSENSE_API_KEY_HERE';\n\nflow.set('api_key', API_KEY);\nflow.set('api_url', 'https://api.husense.io/api/v1');\nflow.set('bff_url', 'https://bff.husense.io');\nflow.set('spaces', {\n    'plzen01': 'd25d9824-36e2-4d0f-bf89-caf574620d88',\n    'plzen02': '085fbb0f-a394-4e9b-a57b-9398af59e6bb'\n});\n\nnode.status({fill:'green', shape:'dot', text:'Inicializováno'});\nreturn { payload: 'Konfigurace načtena' };",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 60,
+        "wires": [
+            [
+                "ui-text-status"
+            ]
+        ]
+    },
+    {
+        "id": "ui-text-status",
+        "type": "ui_text",
+        "z": "husense-dashboard-tab",
+        "group": "dashboard-group-config",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "Status",
+        "label": "Status:",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 530,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "ui-button-refresh",
+        "type": "ui_button",
+        "z": "husense-dashboard-tab",
+        "name": "Obnovit vše",
+        "group": "dashboard-group-config",
+        "order": 2,
+        "width": "3",
+        "height": "1",
+        "passthru": false,
+        "label": "Obnovit vše",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "refresh",
+        "payload": "",
+        "payloadType": "date",
+        "topic": "",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "func-fetch-average",
+                "func-fetch-daily"
+            ]
+        ]
+    },
+    {
+        "id": "inject-auto-refresh",
+        "type": "inject",
+        "z": "husense-dashboard-tab",
+        "name": "Auto refresh (5min)",
+        "props": [],
+        "repeat": "300",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "3",
+        "topic": "",
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "func-fetch-average",
+                "func-fetch-daily"
+            ]
+        ]
+    },
+    {
+        "id": "comment-average",
+        "type": "comment",
+        "z": "husense-dashboard-tab",
+        "name": "=== PRŮMĚRNÁ NÁVŠTĚVNOST ===",
+        "info": "",
+        "x": 190,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "func-fetch-average",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request průměr",
+        "func": "const apiKey = flow.get('api_key');\nconst bffUrl = flow.get('bff_url');\nconst spaces = flow.get('spaces');\n\nif (!apiKey) {\n    node.status({fill:'red', shape:'ring', text:'Chybí API klíč'});\n    return null;\n}\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = bffUrl + '/space/' + spaces.plzen01 + '/gate-visitors/average';\n\nnode.status({fill:'blue', shape:'dot', text:'Načítám...'});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 260,
+        "wires": [
+            [
+                "http-average"
+            ]
+        ]
+    },
+    {
+        "id": "http-average",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET Average",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "func-process-average"
+            ]
+        ]
+    },
+    {
+        "id": "func-process-average",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Zpracovat průměr",
+        "func": "if (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return null;\n}\n\nconst data = msg.payload;\nnode.status({fill:'green', shape:'dot', text:'OK'});\n\nreturn [\n    { payload: Math.round(data.global) },\n    { payload: Math.round(data.weekdays) },\n    { payload: Math.round(data.weekends) },\n    { payload: 'Aktualizováno: ' + new Date().toLocaleTimeString('cs-CZ') }\n];",
+        "outputs": 4,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 260,
+        "wires": [
+            [
+                "ui-gauge-global"
+            ],
+            [
+                "ui-gauge-weekdays"
+            ],
+            [
+                "ui-gauge-weekends"
+            ],
+            [
+                "ui-text-status"
+            ]
+        ]
+    },
+    {
+        "id": "ui-gauge-global",
+        "type": "ui_gauge",
+        "z": "husense-dashboard-tab",
+        "name": "Celkový průměr",
+        "group": "dashboard-group-stats",
+        "order": 1,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Celkový průměr",
+        "label": "osob/den",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1500",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "500",
+        "seg2": "1000",
+        "diff": false,
+        "x": 980,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "ui-gauge-weekdays",
+        "type": "ui_gauge",
+        "z": "husense-dashboard-tab",
+        "name": "Všední dny",
+        "group": "dashboard-group-stats",
+        "order": 2,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Všední dny",
+        "label": "osob/den",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1500",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "500",
+        "seg2": "1000",
+        "diff": false,
+        "x": 970,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "ui-gauge-weekends",
+        "type": "ui_gauge",
+        "z": "husense-dashboard-tab",
+        "name": "Víkendy",
+        "group": "dashboard-group-stats",
+        "order": 3,
+        "width": "4",
+        "height": "4",
+        "gtype": "gage",
+        "title": "Víkendy",
+        "label": "osob/den",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "1500",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "500",
+        "seg2": "1000",
+        "diff": false,
+        "x": 960,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "comment-daily",
+        "type": "comment",
+        "z": "husense-dashboard-tab",
+        "name": "=== DENNÍ NÁVŠTĚVNOST (GRAF) ===",
+        "info": "",
+        "x": 200,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "func-fetch-daily",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request denní data",
+        "func": "const apiKey = flow.get('api_key');\nconst bffUrl = flow.get('bff_url');\nconst spaces = flow.get('spaces');\n\nif (!apiKey) {\n    node.status({fill:'red', shape:'ring', text:'Chybí API klíč'});\n    return null;\n}\n\n// Posledních 14 dní\nconst end = new Date();\nconst start = new Date();\nstart.setDate(start.getDate() - 14);\n\nconst formatDate = (d) => d.toISOString().split('T')[0];\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = bffUrl + '/space/' + spaces.plzen01 + '/gate-visitors/summary/daily?start=' + formatDate(start) + '&end=' + formatDate(end);\n\nnode.status({fill:'blue', shape:'dot', text:'Načítám graf...'});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 380,
+        "wires": [
+            [
+                "http-daily"
+            ]
+        ]
+    },
+    {
+        "id": "http-daily",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET Daily",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 570,
+        "y": 380,
+        "wires": [
+            [
+                "func-process-daily"
+            ]
+        ]
+    },
+    {
+        "id": "func-process-daily",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Zpracovat pro graf",
+        "func": "if (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return null;\n}\n\nconst data = msg.payload;\nconst dates = Object.keys(data).sort();\n\nif (dates.length === 0) {\n    node.status({fill:'yellow', shape:'ring', text:'Žádná data'});\n    return null;\n}\n\nnode.status({fill:'green', shape:'dot', text:dates.length + ' dnů'});\n\n// Připravit labels a hodnoty\nconst labels = dates.map(date => {\n    const d = new Date(date);\n    return d.toLocaleDateString('cs-CZ', {day: 'numeric', month: 'numeric'});\n});\nconst values = dates.map(date => data[date]);\n\n// Formát pro bar chart\nreturn {\n    payload: [{\n        series: ['Návštěvníci'],\n        data: [values],\n        labels: labels\n    }]\n};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 380,
+        "wires": [
+            [
+                "ui-chart-daily"
+            ]
+        ]
+    },
+    {
+        "id": "ui-chart-daily",
+        "type": "ui_chart",
+        "z": "husense-dashboard-tab",
+        "name": "Graf denní návštěvnosti",
+        "group": "dashboard-group-chart",
+        "order": 1,
+        "width": "12",
+        "height": "6",
+        "label": "Denní návštěvnost (posledních 14 dní)",
+        "chartType": "bar",
+        "legend": "false",
+        "xformat": "HH:mm:ss",
+        "interpolate": "linear",
+        "nodata": "Načítám data...",
+        "dot": false,
+        "ymin": "0",
+        "ymax": "",
+        "removeOlder": 1,
+        "removeOlderPoints": "",
+        "removeOlderUnit": "3600",
+        "cutout": 0,
+        "useOneColor": false,
+        "useUTC": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "outputs": 1,
+        "useDifferentColor": false,
+        "x": 1000,
+        "y": 380,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "comment-spaces",
+        "type": "comment",
+        "z": "husense-dashboard-tab",
+        "name": "=== SPACES & DEVICES ===",
+        "info": "",
+        "x": 170,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "ui-button-load-spaces",
+        "type": "ui_button",
+        "z": "husense-dashboard-tab",
+        "name": "Načíst spaces",
+        "group": "dashboard-group-spaces",
+        "order": 1,
+        "width": "3",
+        "height": "1",
+        "passthru": false,
+        "label": "Načíst spaces",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "list",
+        "payload": "",
+        "payloadType": "date",
+        "topic": "",
+        "x": 160,
+        "y": 500,
+        "wires": [
+            [
+                "func-fetch-spaces"
+            ]
+        ]
+    },
+    {
+        "id": "ui-button-load-devices",
+        "type": "ui_button",
+        "z": "husense-dashboard-tab",
+        "name": "Načíst devices",
+        "group": "dashboard-group-spaces",
+        "order": 2,
+        "width": "3",
+        "height": "1",
+        "passthru": false,
+        "label": "Načíst devices",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "devices",
+        "payload": "devices",
+        "payloadType": "str",
+        "topic": "",
+        "x": 160,
+        "y": 540,
+        "wires": [
+            [
+                "func-fetch-devices"
+            ]
+        ]
+    },
+    {
+        "id": "func-fetch-spaces",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request spaces",
+        "func": "const apiKey = flow.get('api_key');\nconst apiUrl = flow.get('api_url');\n\nif (!apiKey) return null;\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = apiUrl + '/spaces';\nmsg.dataType = 'spaces';\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 500,
+        "wires": [
+            [
+                "http-list"
+            ]
+        ]
+    },
+    {
+        "id": "func-fetch-devices",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request devices",
+        "func": "const apiKey = flow.get('api_key');\nconst apiUrl = flow.get('api_url');\n\nif (!apiKey) return null;\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = apiUrl + '/devices';\nmsg.dataType = 'devices';\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 540,
+        "wires": [
+            [
+                "http-list"
+            ]
+        ]
+    },
+    {
+        "id": "http-list",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET List",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 540,
+        "y": 520,
+        "wires": [
+            [
+                "func-format-table"
+            ]
+        ]
+    },
+    {
+        "id": "func-format-table",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Formátovat tabulku",
+        "func": "if (msg.statusCode !== 200) {\n    return { payload: '<p style=\"color:red\">Chyba při načítání</p>' };\n}\n\nconst items = msg.payload;\nconst isDevices = msg.dataType === 'devices';\n\nlet html = '<table style=\"width:100%;border-collapse:collapse;font-size:12px;\">';\n\nif (isDevices) {\n    html += '<tr style=\"background:#333;color:#fff;\"><th>Název</th><th>Typ</th><th>Space</th><th>Device ID</th></tr>';\n    items.forEach((item, i) => {\n        const bg = i % 2 === 0 ? '#f9f9f9' : '#fff';\n        html += `<tr style=\"background:${bg};\">`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\"><strong>${item.name}</strong></td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\">${item.type}</td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\">${item.space ? item.space.name : '-'}</td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;font-family:monospace;font-size:10px;\">${item.device_id}</td>`;\n        html += '</tr>';\n    });\n} else {\n    html += '<tr style=\"background:#333;color:#fff;\"><th>Název</th><th>Lokace</th><th>Typ</th><th>Organizace</th></tr>';\n    items.forEach((item, i) => {\n        const bg = i % 2 === 0 ? '#f9f9f9' : '#fff';\n        html += `<tr style=\"background:${bg};\">`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\"><strong>${item.name}</strong></td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\">${item.location ? item.location.name : '-'}</td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\">${item.location ? item.location.type : '-'}</td>`;\n        html += `<td style=\"padding:6px;border:1px solid #ddd;\">${item.organization ? item.organization.name : '-'}</td>`;\n        html += '</tr>';\n    });\n}\n\nhtml += '</table>';\nreturn { payload: html };",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 710,
+        "y": 520,
+        "wires": [
+            [
+                "ui-template-table"
+            ]
+        ]
+    },
+    {
+        "id": "ui-template-table",
+        "type": "ui_template",
+        "z": "husense-dashboard-tab",
+        "group": "dashboard-group-spaces",
+        "name": "Tabulka",
+        "order": 3,
+        "width": "12",
+        "height": "4",
+        "format": "<div ng-bind-html=\"msg.payload\"></div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 880,
+        "y": 520,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "dashboard-group-heatmap",
+        "type": "ui_group",
+        "name": "Heatmapa pohybu",
+        "tab": "dashboard-tab-main",
+        "order": 5,
+        "disp": true,
+        "width": "12",
+        "collapse": false
+    },
+    {
+        "id": "comment-heatmap",
+        "type": "comment",
+        "z": "husense-dashboard-tab",
+        "name": "=== HEATMAPA ===",
+        "info": "",
+        "x": 150,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "ui-dropdown-heatmap-space",
+        "type": "ui_dropdown",
+        "z": "husense-dashboard-tab",
+        "name": "Výběr prostoru",
+        "group": "dashboard-group-heatmap",
+        "order": 1,
+        "width": "3",
+        "height": "1",
+        "label": "Prostor:",
+        "tooltip": "",
+        "place": "Vyberte prostor",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "heatmap_space",
+        "topicType": "str",
+        "options": [
+            {"label": "Plzen-01 (má heatmapu)", "value": "d25d9824-36e2-4d0f-bf89-caf574620d88", "type": "str"},
+            {"label": "Plzen-02 (bez heatmapy)", "value": "085fbb0f-a394-4e9b-a57b-9398af59e6bb", "type": "str"}
+        ],
+        "x": 180,
+        "y": 640,
+        "wires": [
+            ["func-save-heatmap-space"]
+        ]
+    },
+    {
+        "id": "func-save-heatmap-space",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Uložit prostor",
+        "func": "flow.set('heatmap_space', msg.payload);\nnode.status({fill:'green', shape:'dot', text: msg.payload.substring(0,8) + '...'});\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "flow.set('heatmap_space', 'd25d9824-36e2-4d0f-bf89-caf574620d88');",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 640,
+        "wires": [[]]
+    },
+    {
+        "id": "ui-dropdown-heatmap-time",
+        "type": "ui_dropdown",
+        "z": "husense-dashboard-tab",
+        "name": "Časový rozsah",
+        "group": "dashboard-group-heatmap",
+        "order": 2,
+        "width": "3",
+        "height": "1",
+        "label": "Období:",
+        "tooltip": "",
+        "place": "Vyberte období",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "heatmap_time",
+        "topicType": "str",
+        "options": [
+            {"label": "Poslední hodina", "value": "1h", "type": "str"},
+            {"label": "Posledních 6 hodin", "value": "6h", "type": "str"},
+            {"label": "Posledních 24 hodin", "value": "24h", "type": "str"},
+            {"label": "Posledních 48 hodin", "value": "48h", "type": "str"},
+            {"label": "Poslední týden", "value": "7d", "type": "str"},
+            {"label": "Dnes", "value": "today", "type": "str"},
+            {"label": "Včera", "value": "yesterday", "type": "str"}
+        ],
+        "x": 180,
+        "y": 680,
+        "wires": [
+            ["func-save-heatmap-time"]
+        ]
+    },
+    {
+        "id": "func-save-heatmap-time",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Uložit období",
+        "func": "flow.set('heatmap_time', msg.payload);\nnode.status({fill:'green', shape:'dot', text: msg.payload});\nreturn null;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "flow.set('heatmap_time', '24h');",
+        "finalize": "",
+        "libs": [],
+        "x": 380,
+        "y": 680,
+        "wires": [[]]
+    },
+    {
+        "id": "ui-button-load-heatmap",
+        "type": "ui_button",
+        "z": "husense-dashboard-tab",
+        "name": "Načíst heatmapu",
+        "group": "dashboard-group-heatmap",
+        "order": 3,
+        "width": "3",
+        "height": "1",
+        "passthru": false,
+        "label": "Načíst",
+        "tooltip": "Načte heatmapu dle vybraných parametrů",
+        "color": "",
+        "bgcolor": "#097479",
+        "icon": "fa-refresh",
+        "payload": "",
+        "payloadType": "date",
+        "topic": "",
+        "x": 170,
+        "y": 720,
+        "wires": [
+            [
+                "func-fetch-heatmap"
+            ]
+        ]
+    },
+    {
+        "id": "func-fetch-heatmap",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Request heatmap",
+        "func": "const apiKey = flow.get('api_key');\nconst bffUrl = flow.get('bff_url');\n\n// Načíst vybraný prostor a období z kontextu\nconst spaceId = flow.get('heatmap_space') || 'd25d9824-36e2-4d0f-bf89-caf574620d88';\nconst timePeriod = flow.get('heatmap_time') || '24h';\n\nif (!apiKey) {\n    node.status({fill:'red', shape:'ring', text:'Chybí API klíč'});\n    return null;\n}\n\n// Vypočítat časový rozsah\nconst now = Date.now();\nlet start, end = now;\n\nswitch(timePeriod) {\n    case '1h':\n        start = now - (1 * 60 * 60 * 1000);\n        break;\n    case '6h':\n        start = now - (6 * 60 * 60 * 1000);\n        break;\n    case '24h':\n        start = now - (24 * 60 * 60 * 1000);\n        break;\n    case '48h':\n        start = now - (48 * 60 * 60 * 1000);\n        break;\n    case '7d':\n        start = now - (7 * 24 * 60 * 60 * 1000);\n        break;\n    case 'today':\n        const todayStart = new Date();\n        todayStart.setHours(0, 0, 0, 0);\n        start = todayStart.getTime();\n        break;\n    case 'yesterday':\n        const yestStart = new Date();\n        yestStart.setDate(yestStart.getDate() - 1);\n        yestStart.setHours(0, 0, 0, 0);\n        const yestEnd = new Date();\n        yestEnd.setDate(yestEnd.getDate() - 1);\n        yestEnd.setHours(23, 59, 59, 999);\n        start = yestStart.getTime();\n        end = yestEnd.getTime();\n        break;\n    default:\n        start = now - (24 * 60 * 60 * 1000);\n}\n\nmsg.headers = {\n    'Authorization': 'Bearer ' + apiKey,\n    'Content-Type': 'application/json'\n};\nmsg.url = bffUrl + '/space/' + spaceId + '/heatmap?startTimestamp=' + start + '&endTimestamp=' + end;\n\nnode.status({fill:'blue', shape:'dot', text: timePeriod + ' - načítám...'});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 640,
+        "wires": [
+            [
+                "http-heatmap"
+            ]
+        ]
+    },
+    {
+        "id": "http-heatmap",
+        "type": "http request",
+        "z": "husense-dashboard-tab",
+        "name": "GET Heatmap",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 580,
+        "y": 640,
+        "wires": [
+            [
+                "func-process-heatmap",
+                "debug-heatmap"
+            ]
+        ]
+    },
+    {
+        "id": "debug-heatmap",
+        "type": "debug",
+        "z": "husense-dashboard-tab",
+        "name": "Heatmap Debug",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": true,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "statusCode",
+        "statusType": "msg",
+        "x": 580,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "func-process-heatmap",
+        "type": "function",
+        "z": "husense-dashboard-tab",
+        "name": "Zpracovat heatmap",
+        "func": "if (msg.statusCode === 404) {\n    node.status({fill:'yellow', shape:'ring', text:'Žádná data'});\n    return { payload: { error: true, message: 'Heatmapa není dostupná pro vybraný prostor nebo období (404)' } };\n}\n\nif (msg.statusCode !== 200) {\n    node.status({fill:'red', shape:'ring', text:'Chyba: ' + msg.statusCode});\n    return { payload: { error: true, message: 'Chyba při načítání: HTTP ' + msg.statusCode } };\n}\n\nconst data = msg.payload;\nif (!data || !data.data || !data.width) {\n    node.status({fill:'yellow', shape:'ring', text:'Prázdná data'});\n    return { payload: { error: true, message: 'API vrátilo prázdná data' } };\n}\n\nnode.status({fill:'green', shape:'dot', text: data.width + 'x' + data.height});\n\nreturn { \n    payload: {\n        width: data.width,\n        height: data.height,\n        data: data.data,\n        timestamp: new Date().toLocaleString('cs-CZ')\n    }\n};",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 770,
+        "y": 640,
+        "wires": [
+            [
+                "ui-template-heatmap"
+            ]
+        ]
+    },
+    {
+        "id": "ui-template-heatmap",
+        "type": "ui_template",
+        "z": "husense-dashboard-tab",
+        "group": "dashboard-group-heatmap",
+        "name": "Heatmap Canvas",
+        "order": 4,
+        "width": "12",
+        "height": "11",
+        "format": "<style>\n#heatmap-canvas-{{$id}} {\n    border: 1px solid #555;\n    background: #222;\n    display: block;\n    margin: 10px auto;\n}\n.heatmap-info {\n    font-size: 12px;\n    color: #aaa;\n    margin: 5px 0;\n    text-align: center;\n}\n.heatmap-legend {\n    display: flex;\n    justify-content: center;\n    align-items: center;\n    margin-top: 10px;\n    font-size: 11px;\n    color: #aaa;\n}\n.legend-gradient {\n    width: 200px;\n    height: 15px;\n    background: linear-gradient(to right, #0000ff, #00ffff, #00ff00, #ffff00, #ff0000);\n    margin: 0 10px;\n    border-radius: 3px;\n}\n</style>\n\n<div style=\"text-align:center; padding:10px;\">\n    <canvas id=\"heatmap-canvas-{{$id}}\" width=\"368\" height=\"240\"></canvas>\n    <div class=\"heatmap-info\" ng-if=\"msg.payload.timestamp\">\n        Aktualizováno: {{msg.payload.timestamp}} | Rozměr: {{msg.payload.width}}x{{msg.payload.height}} | Max: {{maxVal}}\n    </div>\n    <div class=\"heatmap-info\" ng-if=\"!msg.payload\" style=\"color:#888;\">\n        Klikněte na \"Načíst heatmapu\"\n    </div>\n    <div class=\"heatmap-legend\">\n        <span>Nízká</span>\n        <div class=\"legend-gradient\"></div>\n        <span>Vysoká</span>\n    </div>\n</div>\n\n<script>\n(function(scope) {\n    scope.maxVal = 0;\n    \n    scope.$watch('msg.payload', function(payload) {\n        if (!payload || !payload.data || !payload.width) return;\n        \n        setTimeout(function() {\n            var canvas = document.getElementById('heatmap-canvas-' + scope.$id);\n            if (!canvas) { console.error('Canvas not found'); return; }\n            \n            var ctx = canvas.getContext('2d');\n            var w = payload.width;\n            var h = payload.height;\n            var data = payload.data;\n            \n            canvas.width = w * 3;\n            canvas.height = h * 3;\n            \n            var max = 0;\n            for (var i = 0; i < data.length; i++) {\n                if (data[i] > max) max = data[i];\n            }\n            scope.maxVal = max.toFixed(1);\n            scope.$apply();\n            \n            if (max === 0) max = 1;\n            \n            var imgData = ctx.createImageData(w, h);\n            for (var i = 0; i < data.length; i++) {\n                var n = data[i] / max;\n                var r, g, b;\n                if (n < 0.25) { r = 0; g = Math.floor(n*4*255); b = 255; }\n                else if (n < 0.5) { r = 0; g = 255; b = Math.floor((1-(n-0.25)*4)*255); }\n                else if (n < 0.75) { r = Math.floor((n-0.5)*4*255); g = 255; b = 0; }\n                else { r = 255; g = Math.floor((1-(n-0.75)*4)*255); b = 0; }\n                imgData.data[i*4] = r;\n                imgData.data[i*4+1] = g;\n                imgData.data[i*4+2] = b;\n                imgData.data[i*4+3] = 255;\n            }\n            \n            var tmpCanvas = document.createElement('canvas');\n            tmpCanvas.width = w;\n            tmpCanvas.height = h;\n            tmpCanvas.getContext('2d').putImageData(imgData, 0, 0);\n            \n            ctx.imageSmoothingEnabled = false;\n            ctx.drawImage(tmpCanvas, 0, 0, w*3, h*3);\n            \n            console.log('Heatmap: ' + w + 'x' + h + ', max=' + max);\n        }, 100);\n    });\n})(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "x": 980,
+        "y": 640,
+        "wires": [
+            []
+        ]
+    }
+]

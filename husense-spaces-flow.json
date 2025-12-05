@@ -1,0 +1,457 @@
+[
+    {
+        "id": "husense-flow-tab",
+        "type": "tab",
+        "label": "Husense API",
+        "disabled": false,
+        "info": "Flow pro práci s Husense API"
+    },
+    {
+        "id": "comment-config",
+        "type": "comment",
+        "z": "husense-flow-tab",
+        "name": "=== KONFIGURACE ===",
+        "info": "Nejprve klikněte na 'Nastavit API klíč'",
+        "x": 140,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "inject-init-apikey",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "1. Nastavit API klíč",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "YOUR_HUSENSE_API_KEY_HERE",
+        "payloadType": "str",
+        "x": 160,
+        "y": 80,
+        "wires": [
+            [
+                "func-set-apikey"
+            ]
+        ]
+    },
+    {
+        "id": "func-set-apikey",
+        "type": "function",
+        "z": "husense-flow-tab",
+        "name": "Uložit do kontextu",
+        "func": "// Uloží konfiguraci do flow kontextu\nflow.set('husense_api_key', msg.payload);\nflow.set('husense_api_url', 'https://api.husense.io/api/v1');\nflow.set('husense_bff_url', 'https://bff.husense.io');\n\n// ID spaces - Plzen\nflow.set('space_plzen01', 'd25d9824-36e2-4d0f-bf89-caf574620d88');\nflow.set('space_plzen02', '085fbb0f-a394-4e9b-a57b-9398af59e6bb');\n\nnode.status({fill:\"green\", shape:\"dot\", text:\"Konfigurace uložena\"});\nreturn { payload: \"Konfigurace uložena do kontextu\" };",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 390,
+        "y": 80,
+        "wires": [
+            [
+                "debug-config"
+            ]
+        ]
+    },
+    {
+        "id": "debug-config",
+        "type": "debug",
+        "z": "husense-flow-tab",
+        "name": "Status",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "comment-api",
+        "type": "comment",
+        "z": "husense-flow-tab",
+        "name": "=== API ENDPOINTY (api.husense.io) ===",
+        "info": "",
+        "x": 200,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "inject-get-spaces",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "GET /spaces",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/spaces",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "api",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 180,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "inject-get-devices",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "GET /devices",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/devices",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "api",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 220,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "inject-get-locations",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "GET /locations",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/locations",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "api",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "comment-bff",
+        "type": "comment",
+        "z": "husense-flow-tab",
+        "name": "=== BFF DATA ENDPOINTY (bff.husense.io) ===",
+        "info": "",
+        "x": 220,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "inject-gate-visitors-avg",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "Průměr návštěvníků (Plzen-01)",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/space/d25d9824-36e2-4d0f-bf89-caf574620d88/gate-visitors/average",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "bff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 200,
+        "y": 360,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "inject-gate-visitors-daily",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "Denní souhrn (Plzen-01)",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/space/d25d9824-36e2-4d0f-bf89-caf574620d88/gate-visitors/summary/daily",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "bff",
+                "vt": "str"
+            },
+            {
+                "p": "queryParams",
+                "v": "{\"start\":\"2024-10-01\",\"end\":\"2024-10-31\"}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 180,
+        "y": 400,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "inject-gate-visitors-weekly",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "Týdenní souhrn (Plzen-01)",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/space/d25d9824-36e2-4d0f-bf89-caf574620d88/gate-visitors/summary/weekly",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "bff",
+                "vt": "str"
+            },
+            {
+                "p": "queryParams",
+                "v": "{\"start\":\"2024-10-01\",\"end\":\"2024-10-31\"}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 190,
+        "y": 440,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "inject-classified-daily",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "Klasifikovaní návštěvníci denně",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/space/d25d9824-36e2-4d0f-bf89-caf574620d88/classified-gate-visitors/summary/daily",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "bff",
+                "vt": "str"
+            },
+            {
+                "p": "queryParams",
+                "v": "{\"start\":\"2024-10-01\",\"end\":\"2024-10-31\"}",
+                "vt": "json"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 210,
+        "y": 480,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "func-prepare-request",
+        "type": "function",
+        "z": "husense-flow-tab",
+        "name": "Připravit HTTP request",
+        "func": "// Načte konfiguraci z flow kontextu\nconst apiKey = flow.get('husense_api_key');\nconst apiUrl = flow.get('husense_api_url') || 'https://api.husense.io/api/v1';\nconst bffUrl = flow.get('husense_bff_url') || 'https://bff.husense.io';\n\nif (!apiKey) {\n    node.status({fill:\"red\", shape:\"ring\", text:\"Chybí API klíč!\"});\n    node.error(\"API klíč není nastaven. Nejprve klikněte na 'Nastavit API klíč'.\");\n    return null;\n}\n\n// Nastaví headers\nmsg.headers = {\n    \"Authorization\": \"Bearer \" + apiKey,\n    \"Content-Type\": \"application/json\"\n};\n\n// Vybere správnou base URL\nconst baseUrl = (msg.baseType === 'bff') ? bffUrl : apiUrl;\n\n// Sestaví URL s query parametry\nlet url = baseUrl + msg.endpoint;\nif (msg.queryParams) {\n    const params = new URLSearchParams(msg.queryParams);\n    url += '?' + params.toString();\n}\nmsg.url = url;\n\nnode.status({fill:\"blue\", shape:\"dot\", text:\"Volám: \" + msg.endpoint});\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 360,
+        "wires": [
+            [
+                "http-request"
+            ]
+        ]
+    },
+    {
+        "id": "http-request",
+        "type": "http request",
+        "z": "husense-flow-tab",
+        "name": "HTTP Request",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 680,
+        "y": 360,
+        "wires": [
+            [
+                "func-process-response"
+            ]
+        ]
+    },
+    {
+        "id": "func-process-response",
+        "type": "function",
+        "z": "husense-flow-tab",
+        "name": "Zpracovat odpověď",
+        "func": "// Zpracuje odpověď z API\nif (msg.statusCode !== 200) {\n    node.status({fill:\"red\", shape:\"ring\", text:\"Chyba: \" + msg.statusCode});\n    node.error(\"API vrátilo chybu: \" + msg.statusCode);\n    return { \n        payload: { \n            error: true, \n            statusCode: msg.statusCode, \n            message: msg.payload,\n            url: msg.req ? msg.req.href : msg.url\n        } \n    };\n}\n\nconst data = msg.payload;\nlet count = 0;\nlet info = \"OK\";\n\nif (Array.isArray(data)) {\n    count = data.length;\n    info = count + \" záznamů\";\n} else if (typeof data === 'object' && data !== null) {\n    count = Object.keys(data).length;\n    info = count + \" položek\";\n}\n\nnode.status({fill:\"green\", shape:\"dot\", text:info});\n\n// Výstup s metadaty\nconst result = {\n    success: true,\n    url: msg.req ? msg.req.href : msg.url,\n    timestamp: new Date().toISOString(),\n    data: data\n};\n\nreturn { payload: result };",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 870,
+        "y": 360,
+        "wires": [
+            [
+                "debug-output"
+            ]
+        ]
+    },
+    {
+        "id": "debug-output",
+        "type": "debug",
+        "z": "husense-flow-tab",
+        "name": "Výstup",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1050,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "comment-custom",
+        "type": "comment",
+        "z": "husense-flow-tab",
+        "name": "=== VLASTNÍ DOTAZ ===",
+        "info": "",
+        "x": 160,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "inject-custom",
+        "type": "inject",
+        "z": "husense-flow-tab",
+        "name": "Vlastní BFF dotaz",
+        "props": [
+            {
+                "p": "endpoint",
+                "v": "/space/d25d9824-36e2-4d0f-bf89-caf574620d88/gate-visitors/average",
+                "vt": "str"
+            },
+            {
+                "p": "baseType",
+                "v": "bff",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 160,
+        "y": 580,
+        "wires": [
+            [
+                "func-prepare-request"
+            ]
+        ]
+    },
+    {
+        "id": "comment-help",
+        "type": "comment",
+        "z": "husense-flow-tab",
+        "name": "DOKUMENTACE",
+        "info": "## Husense API Flow\n\n### Servery:\n- **API:** https://api.husense.io/api/v1\n- **BFF:** https://bff.husense.io\n\n### Spaces:\n- Plzen-01: `d25d9824-36e2-4d0f-bf89-caf574620d88`\n- Plzen-02: `085fbb0f-a394-4e9b-a57b-9398af59e6bb`\n\n### API Endpointy:\n- `GET /spaces` - Seznam spaces\n- `GET /devices` - Seznam zařízení\n- `GET /locations` - Seznam lokací\n\n### BFF Data Endpointy:\n- `/space/{id}/gate-visitors/average` - Průměr návštěvníků\n- `/space/{id}/gate-visitors/summary/daily?start=&end=` - Denní souhrn\n- `/space/{id}/gate-visitors/summary/weekly?start=&end=` - Týdenní souhrn\n- `/space/{id}/classified-gate-visitors/summary/daily?start=&end=` - Klasifikovaní denně\n- `/space/{id}/heatmap?startTimestamp=&endTimestamp=` - Heatmap data\n\n### Použití:\n1. Klikněte na \"Nastavit API klíč\"\n2. Vyberte požadovaný endpoint\n3. Výsledek se zobrazí v debug panelu",
+        "x": 140,
+        "y": 640,
+        "wires": []
+    }
+]
